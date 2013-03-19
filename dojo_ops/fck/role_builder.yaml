@@ -1,0 +1,59 @@
+# the name of the role.
+name: builder
+
+# description of the role.
+description: Build machine
+
+# name of the user for EC2 SSH login.
+user: ec2-user
+
+# AWS information for AWS instances in this role.
+# can be overridden in the role.create_instance() call.
+aws:
+  ami_id: ami-1624987f  # Amazon Linux AMI
+  key_name: main
+  security_groups: [dojo_ops]
+  instance_type: t1.micro
+
+# describes how to provision instances in this role.
+provision:
+  # tools to install on the instance.
+  tools: [__update_packages__, reboot,
+          easy_install, python2.7, pip, virtualenv,
+          git, gcc, python27-devel, mysql, mysql-devel, reboot]
+
+  # git repos.
+  git:
+    # if True, installs a private key on the instance that will be used for git commands.
+    # the private-key file must be specified in the context yaml (under keys/git).
+    install_key_file: True
+
+    # which repos to clone: __all__, a repo name, or list of repo names.
+    clone: __all__
+
+  # allow access to instances in these roles.
+  allow_access:
+    roles: web
+
+# describes how to execute a build for instances in this role.
+# this section includes either "plan" or "copy_from", but not both.
+build:
+  plan:
+    # repos to "git pull".
+    repos: [dojo_prod]
+
+    # reference repo whose commit ID is used in the build name.
+    # if not specified the first repo in "repos" is the reference.
+    reference_repo: dojo_prod
+
+    # python interpreter to use in the build virtualenv.
+    # if not specified, uses the default python interpreter.
+    interpreter: python2.7
+
+    # how to run build unittests.
+    unittest: cmd
+
+    # if True, creates a tarball of a successful build.
+    # must be True if any other roles expect to "copy_from" this instance.
+    tarball: True
+

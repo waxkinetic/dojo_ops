@@ -1,0 +1,2 @@
+include LICENSE
+include dojo_ops/fck/*.yaml

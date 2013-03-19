@@ -1,0 +1,47 @@
+# the name of the role.
+name: webapi
+
+# description of the role.
+description: rest api server
+
+# name of the user for EC2 SSH login.
+user: ec2-user
+
+# AWS information for AWS instances in this role.
+# can be overridden in the role.create_instance() call.
+aws:
+  ami_id: ami-1624987f  # Amazon Linux AMI
+  key_name: main
+  security_groups: [dojo_web]
+  instance_type: t1.micro
+
+# describes how to activate/deploy a build.
+activate:
+  name: webapi
+
+  # if specified, fabcloudkit will make a HTTP HEAD request to the gunicorn server with this path,
+  # e.g., to http://127.0.0.1:<port>/<http_test_path. if a 200, 300, or 400 response is received then
+  # activation proceeds. if not specified, activation will proceed as soon as the process is running.
+  http_test_path: /fitness/
+
+  gunicorn:
+    # the gunicorn command to execute; defaults to "gunicorn".
+    script: gunicorn
+
+    # specifies the gunicorn module:variable to run.
+    app_module: dj_webapi:app
+
+    # gunicorn "long-name" options. these are the same as the option names preceded with double-dash,
+    # i.e., use "name" and not "n". "bind" cannot be set because it's set automatically.
+    # "name" and "workers" have intelligent defaults, but can be overridden here.
+    options:
+      debug: True
+      log-level: DEBUG
+
+  # Nginx-specific configuration.
+  nginx:
+    # where Nginx should listen for connections; if not specified defaults to 80.
+    listen: 5000
+
+    # domain in which Nginx listens; if not specified defaults to "".
+    #server_names: None
