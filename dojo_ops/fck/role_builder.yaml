@@ -12,48 +12,63 @@ user: ec2-user
 aws:
   ami_id: ami-1624987f  # Amazon Linux AMI
   key_name: main
-  security_groups: [dojo_ops]
+  security_groups: [default]
   instance_type: t1.micro
+
+# allow access to instances in these roles.
+allow_access:
+  roles: web
 
 # describes how to provision instances in this role.
 provision:
   # tools to install on the instance.
-  tools: [__update_packages__, reboot,
-          easy_install, python2.7, pip, virtualenv,
-          git, gcc, python27-devel, mysql, mysql-devel, reboot]
+  - tools:
+      command: install
+      options: [
+        __update_packages__, reboot,
+        easy_install, python2.7, pip, virtualenv,
+        git, gcc, python27-devel, mysql, mysql-devel, reboot
+      ]
 
-  # git repos.
-  git:
-    # if True, installs a private key on the instance that will be used for git commands.
-    # the private-key file must be specified in the context yaml (under keys/git).
-    install_key_file: True
+  # installs a private key on the instance that will be used for git commands.
+  - git:
+      command: install_key_file
+      local_key_file: /Users/Rick/.ssh/id_rsa_dojo_machine_user
 
-    # which repos to clone: __all__, a repo name, or list of repo names.
-    clone: __all__
-
-  # allow access to instances in these roles.
-  allow_access:
-    roles: web
+  # clone all git repositories listed in context.yaml.
+  - git:
+      command: clone_all
 
 # describes how to execute a build for instances in this role.
 # this section includes either "plan" or "copy_from", but not both.
 build:
-  plan:
-    # repos to "git pull".
-    repos: [dojo_prod]
+  - git:
+      # could also pull one or more specific repos.
+      command: pull_all
 
-    # reference repo whose commit ID is used in the build name.
-    # if not specified the first repo in "repos" is the reference.
-    reference_repo: dojo_prod
+  - python_build:
+      command: build
 
-    # python interpreter to use in the build virtualenv.
-    # if not specified, uses the default python interpreter.
-    interpreter: python2.7
+      # repos to build.
+      repos: [dojo_prod]
 
-    # how to run build unittests.
-    unittest: cmd
+      # reference repo whose commit ID is used in the build name.
+      # if not specified the first repo in the context is used.
+      reference_repo: dojo_prod
 
-    # if True, creates a tarball of a successful build.
-    # must be True if any other roles expect to "copy_from" this instance.
-    tarball: True
+      # python interpreter to use in the build virtualenv.
+      # if not specified, uses the default python interpreter.
+      interpreter: python2.7
 
+      # how to run build unittests.
+      unittest: cmd
+
+      # if True, creates a tarball of a successful build.
+      # must be True if any other roles expect to "copy_from" this instance.
+      tarball: True
+
+      # specifies a list of commands to execute post-build, with the build virtualenv activated.
+      # commands are executed in the order listed. each item in the list must specify "command",
+      # and can also specify "sudo: True". if the command fails then build is terminated unless
+      # "ignore_fail: True" is set.
+      post_build:

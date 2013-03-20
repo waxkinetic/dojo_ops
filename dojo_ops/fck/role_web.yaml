@@ -12,75 +12,80 @@ user: ec2-user
 aws:
   ami_id: ami-1624987f  # Amazon Linux AMI
   key_name: main
-  security_groups: [dojo_web]
+  security_groups: [default]
   instance_type: t1.micro
 
 # describes how to provision instances in this role.
 provision:
-  # generates a unique private/public key-pair for this instance.
-  # must be True if requesting access to any other role.
-  create_key_pair: True
-
   # tools to install on the instance.
-  tools: [__update_packages__, reboot,
-          easy_install, python2.7, pip, virtualenv,
-          supervisord, nginx, reboot]
+  - tools:
+      command: install
+      options: [
+        __update_packages__, reboot, key_pair,
+        easy_install, python2.7, pip, virtualenv,
+        supervisord, nginx, reboot
+      ]
 
   # request access to instances in another role.
   # must be specified if using "copy_from" in the build.
-  request_access:
-    roles: builder
+  - request_access:
+      command: install
+      roles: builder
 
 # describes how to execute a build for instances in this role.
 # this section includes either "plan" or "copy_from", but not both.
 build:
-  # specifies that the build should be copied from an instance in another role.
-  copy_from:
-    # the role of the instance to copy the last good build from.
-    role: builder
+  - python_build:
+      # specifies that the build should be copied from an instance in another role.
+      command: copy_from
 
-    # if True, deletes the tar after copying and decompressing.
-    delete_tar: False
+      # the role-name of the instance to copy the last good build from.
+      role_name: builder
 
-  # specifies a list of commands to execute post-build, with the build virtualenv activated.
-  # commands are executed in the order listed. each item in the list must specify "command",
-  # and can also specify "sudo: True". if the command fails then build is terminated unless
-  # "ignore_fail: True" is set.
-  post_build:
-    - command: dj_create_user_db
-    - command: dj_create_song_queue
-    - command: mkdir -p -m 0777 /Users/Rick/Music
-      sudo: True
+      # if True, deletes the tar after copying and decompressing.
+      delete_tar: False
+
+      # specifies a list of commands to execute post-build, with the build virtualenv activated.
+      # commands are executed in the order listed. each item in the list must specify "command",
+      # and can also specify "sudo: True". if the command fails then build is terminated unless
+      # "ignore_fail: True" is set.
+      post_build:
+        - command: mkdir -p -m 0777 /Users/Rick/Music
+          sudo: True
 
 # describes how to activate/deploy a build.
 activate:
-  # if specified, fabcloudkit will make a HTTP HEAD request to the gunicorn server with this path,
-  # e.g., to http://127.0.0.1:<port>/<http_test_path. if a 200, 300, or 400 response is received then
-  # activation proceeds. if not specified, activation will proceed as soon as the process is running.
-  http_test_path: /fitness
+  - nginx_gunicorn:
+      command: activate
+      name: web
+      force: True
+      gunicorn:
+        # the gunicorn command to execute; defaults to "gunicorn".
+        script: gunicorn
 
-  gunicorn:
-    # the gunicorn command to execute; defaults to "gunicorn".
-    script: gunicorn
+        # specifies the gunicorn module:variable to run.
+        app_module: app:app
 
-    # specifies the gunicorn module:variable to run.
-    app_module: app:app
+        # gunicorn "long-name" options. these are the same as the option names preceded with double-dash,
+        # i.e., use "name" and not "n". "bind" cannot be set because it's set automatically.
+        # "name" and "workers" have intelligent defaults, but can be overridden here.
+        options:
+          debug: True
+          log-level: DEBUG
 
-    # gunicorn "long-name" options. these are the same as the option names preceded with double-dash,
-    # i.e., use "name" and not "n". "bind" cannot be set because it's set automatically.
-    # "name" and "workers" have intelligent defaults, but can be overridden here.
-    options:
-      debug: True
-      log-level: DEBUG
+        # causes the gunicorn server to be verified by sending an HTTP HEAD request with this path. if a
+        # if a 200, 300, or 400 response is received then activation proceeds. if not specified, activation
+        # proceeds as soon as the gunicorn process is running.
+        http_test_path: /fitness/
 
-  # Nginx-specific configuration.
-  nginx:
-    # where Nginx should listen for connections; if not specified defaults to 80.
-    listen: 80
+      # Nginx-specific configuration.
+      nginx:
+        # where Nginx should listen for connections; if not specified defaults to 80.
+        listen: 80
 
-    # domain in which Nginx listens; if not specified defaults to the instance public DNS name.
-    #server_names: None
+        # domain in which Nginx listens; if not specified defaults to the instance public DNS name.
+        #server_names: None
 
-    static:
-      - url: /static/
-        local: app/static/
+        static:
+          - url: /static/
+            local: app/static/
