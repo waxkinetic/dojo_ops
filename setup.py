@@ -32,7 +32,7 @@ setup(
 
     install_requires=[
         'boto >= 2.8.0',
-        'awsspotmonitor >= 0.02',
-        'fabcloudkit >= 0.01-dev'
+        'awsspotmonitor >= 0.01-dev',
+        'fabcloudkit >= 0.02'
     ]
 )
