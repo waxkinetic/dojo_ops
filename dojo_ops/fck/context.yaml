@@ -40,4 +40,5 @@ roles:
   - role_web.yaml
   - role_single.yaml
   - role_webapi.yaml
+  - role_qman.yaml
 

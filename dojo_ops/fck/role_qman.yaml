@@ -1,8 +1,8 @@
 # the name of the role.
-name: webapi
+name: qman
 
 # description of the role.
-description: rest api server
+description: queue dispatcher/processor
 
 # name of the user for EC2 SSH login.
 user: ec2-user
@@ -19,13 +19,13 @@ aws:
 activate:
   - nginx_gunicorn:
       command: activate
-      name: webapi
+      name: qman
       gunicorn:
         # the gunicorn command to execute; defaults to "gunicorn".
         script: gunicorn
 
         # specifies the gunicorn module:variable to run.
-        app_module: dj_webapi:app
+        app_module: dj_qman:app
 
         # gunicorn "long-name" options. these are the same as the option names preceded with double-dash,
         # i.e., use "name" and not "n". "bind" cannot be set because it's set automatically.
@@ -33,6 +33,7 @@ activate:
         options:
           debug: True
           log-level: DEBUG
+          workers: 1
 
         # causes the gunicorn server to be verified by sending an HTTP HEAD request with this path. if a
         # if a 200, 300, or 400 response is received then activation proceeds. if not specified, activation
@@ -42,4 +43,4 @@ activate:
       # Nginx-specific configuration.
       nginx:
         # where Nginx should listen for connections; if not specified defaults to 80.
-        listen: 5000
+        listen: 5001

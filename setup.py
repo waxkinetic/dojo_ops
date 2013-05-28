@@ -27,7 +27,7 @@ setup(
 
     dependency_links=[
         'https://github.com/waxkinetic/awsspotmonitor/tarball/master#egg=awsspotmonitor-0.01-dev',
-        'https://github.com/waxkinetic/fabcloudkit/tarball/master#egg=fabcloudkit-0.02' 
+        'https://github.com/waxkinetic/fabcloudkit/tarball/master#egg=fabcloudkit-0.02'
     ],
 
     install_requires=[

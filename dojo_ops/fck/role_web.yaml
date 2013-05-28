@@ -12,7 +12,7 @@ user: ec2-user
 aws:
   ami_id: ami-1624987f  # Amazon Linux AMI
   key_name: main
-  security_groups: [default]
+  security_groups: [dojo_web, dojo_cidr]
   instance_type: t1.micro
 
 # describes how to provision instances in this role.

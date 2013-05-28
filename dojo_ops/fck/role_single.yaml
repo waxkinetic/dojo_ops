@@ -12,7 +12,7 @@ user: ec2-user
 aws:
   ami_id: ami-1624987f  # Amazon Linux AMI
   key_name: main
-  security_groups: [dojo_web]
+  security_groups: [dojo_web, dojo_cidr]
   instance_type: t1.micro
 
 # describes how to provision instances in this role.
@@ -26,6 +26,9 @@ provision:
           supervisord, nginx, redis
         ]
 
+  # reboot necessary to get supervisor up and running prior to redis config.
+  - reboot:
+
   - redis:
       command: config
       options:
@@ -33,13 +36,11 @@ provision:
         port: 6379
         timeout: 0
         loglevel: notice
-        logfile: redis.log
+        logfile: /tmp/redis-server.log
         databases: 1
         maxmemory: 20mb
         maxmemory-policy: allkeys-lru
         maxmemory-samples: 3
-
-  - reboot:
 
   # installs a private key on the instance that will be used for git commands.
   - git:

@@ -20,6 +20,4 @@ class DojoSpotMon(AwsSpotMonitor):
             pass
 
         # need to make spotmon smarter so it keeps things in the same availability zone?
-        # have spotmon send an email when capturing starts?
         # should do all this work in another process
-        # redis config

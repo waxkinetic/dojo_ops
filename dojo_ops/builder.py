@@ -28,7 +28,7 @@ __all__ = ['Builder', 'update_and_notify', 'run_script']
 
 
 def update_and_notify(instance_id, provision=False):
-    code, text = run_script(instance_id, 'single', 'webapi', provision)
+    code, text = run_script(instance_id, 'single', ['webapi', 'qman'], provision)
     sender, recipients, msg = create_plaintext_msg(
         'Dojo OPS instance update results',
         MailConfig.sender, MailConfig.recipients, text)
@@ -88,7 +88,7 @@ class Builder(object):
             aws_secret_access_key=os.environ['AWS_SECRET_ACCESS_KEY'])
 
     def update(self, instance_id, role_name, also_activate=None, provision=True):
-        if not also_activate:
+        if also_activate is None:
             also_activate = []
         if also_activate and isinstance(also_activate, basestring):
             also_activate = [also_activate]
