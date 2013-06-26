@@ -22,7 +22,7 @@ provision:
       command: install
       options: [
           __update_packages__, reboot, key_pair, easy_install, python2.7,
-          pip, virtualenv, git, gcc, make, python27-devel, mysql, mysql-devel,
+          pip, virtualenv, git, gcc, libjpeg, make, python27-devel, mysql, mysql-devel,
           supervisord, nginx, redis
         ]
 
