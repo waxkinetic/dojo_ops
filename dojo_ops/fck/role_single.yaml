@@ -54,6 +54,9 @@ provision:
 # describes how to execute a build for instances in this role.
 # this section includes either "plan" or "copy_from", but not both.
 build:
+  # bounce the machine before the build (helps with default ulimit=2014).
+  - reboot:
+
   - git:
       # could also pull one or more specific repos.
       command: pull_all
