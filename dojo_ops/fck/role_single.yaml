@@ -21,9 +21,19 @@ provision:
   - tools:
       command: install
       options: [
-          __update_packages__, reboot, key_pair, easy_install, python2.7,
-          pip, virtualenv, git, gcc, libjpeg_devel, make, python27-devel, mysql, mysql-devel,
-          supervisord, nginx, redis
+          __update_packages__, reboot, key_pair, easy_install, python2.7, pip
+        ]
+
+  # upgrade setuptools.
+  - pip_command:
+      text: install -U -q setuptools
+
+  # more tools to install on the instance.
+  - tools:
+      command: install
+      options: [
+          virtualenv, git, gcc, libjpeg_devel, make, python27-devel, mysql,
+          mysql-devel, supervisord, nginx, redis
         ]
 
   # reboot necessary to get supervisor up and running prior to redis config.
